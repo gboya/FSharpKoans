@@ -1,5 +1,6 @@
 ﻿namespace FSharpKoans
 open FSharpKoans.Core
+open System
 
 //---------------------------------------------------------------
 // Apply Your Knowledge!
@@ -55,8 +56,35 @@ module ``about the stock example`` =
     // tests for yourself along the way. You can also try 
     // using the F# Interactive window to check your progress.
 
+    let ExtractDaysAndOpeningAndClosingValues() = 
+        let valuesOnly = stockData.Tail
+        let splitByCommas (s:string) = s.Split([|','|])
+        let values = valuesOnly 
+                        |> List.map splitByCommas 
+                        |> List.map (fun a -> (a.[0], a.[1], a.[4]))
+        values
+        
+    [<Koan>]
+    let CanExtractNeededValues() = 
+        let values = ExtractDaysAndOpeningAndClosingValues()
+        AssertEquality ("2012-03-30", "32.40", "32.26") values.Head
+    
+    // Just to handle CultureInfo in a clean way...
+    let ConvertToNumericPrices (x, y:string, z:string) = 
+        let culture = System.Globalization.CultureInfo.InvariantCulture
+        (x, Double.Parse(y, culture), Double.Parse(z, culture))
+
+    [<Koan>]
+    let CanConvertPricesToNumeric() = 
+        let original = ("2012-03-30", "32.40", "32.26")
+
+        AssertEquality ("2012-03-30", 32.40, 32.26) (original |> ConvertToNumericPrices)
+
     [<Koan>]
     let YouGotTheAnswerCorrect() =
-        let result =  __
-        
+        let result =  ExtractDaysAndOpeningAndClosingValues()
+                        |> List.map ConvertToNumericPrices
+                        |> Seq.maxBy (fun (_, y, z) -> abs(z-y))
+                        |> (fun (x, _, _) -> x) // Better way ?
+
         AssertEquality "2012-03-13" result
